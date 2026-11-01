@@ -1,4 +1,3 @@
-
 * {
     margin: 0;
     padding: 0;
@@ -31,7 +30,8 @@ nav span {
 
 .nav-links {
     display: flex;
-    gap: 20px;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .nav-links a {
@@ -102,15 +102,19 @@ label {
     font-weight: bold;
 }
 
-input {
+input,
+select {
     width: 100%;
     padding: 12px;
     border: 1px solid #d3dfd5;
     border-radius: 7px;
     font-size: 15px;
+    background: white;
+    color: #234532;
 }
 
-input:focus {
+input:focus,
+select:focus {
     outline: 2px solid #70aa7b;
 }
 
@@ -154,7 +158,7 @@ button:hover {
     color: #237344;
 }
 
-/* CIRCULAR GREEN IT SCORE */
+/* GREEN IT SCORE */
 
 .score-section {
     text-align: center;
@@ -163,20 +167,16 @@ button:hover {
 
 .score-circle {
     --score: 0%;
-
     width: 190px;
     height: 190px;
     border-radius: 50%;
-
     background: conic-gradient(
         #237849 0% var(--score),
         #e5eee6 var(--score) 100%
     );
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     margin: 25px auto;
     transition: background 0.5s ease;
 }
@@ -186,7 +186,6 @@ button:hover {
     height: 150px;
     background: white;
     border-radius: 50%;
-
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -346,6 +345,129 @@ tbody tr:hover {
     margin-top: 10px;
 }
 
+/* AUDIT COMPARISON */
+
+.compare-selection {
+    margin-top: 35px;
+    padding: 25px;
+    background: #f2f8f2;
+    border-radius: 10px;
+}
+
+.compare-selection h2 {
+    margin-bottom: 10px;
+}
+
+.compare-selection > p {
+    color: #687c6d;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.compare-select-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.compare-selection .compare-select-grid {
+    margin-top: 20px;
+}
+
+.comparison-labels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.comparison-labels > div {
+    background: #f2f8f2;
+    padding: 18px;
+    border-radius: 9px;
+}
+
+.comparison-labels strong {
+    color: #237849;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.comparison-labels p {
+    color: #687c6d;
+    font-size: 14px;
+}
+
+.comparison-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin: 25px 0 35px;
+}
+
+.comparison-card {
+    background: #eaf4e9;
+    border-radius: 10px;
+    padding: 22px 15px;
+    text-align: center;
+}
+
+.comparison-card h3 {
+    font-size: 15px;
+    margin-bottom: 20px;
+    color: #164b32;
+}
+
+.comparison-values {
+    font-size: 21px;
+    font-weight: bold;
+    color: #237849;
+    margin-bottom: 8px;
+    overflow-wrap: anywhere;
+}
+
+.comparison-values span {
+    color: #829488;
+    padding: 0 4px;
+}
+
+.comparison-card small {
+    color: #687c6d;
+    font-size: 13px;
+}
+
+.change-value {
+    margin-top: 18px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.positive {
+    color: #237849;
+}
+
+.negative {
+    color: #bd4949;
+}
+
+.neutral {
+    color: #687c6d;
+}
+
+.comparison-summary {
+    background: #f2f8f2;
+    padding: 22px;
+    border-radius: 10px;
+    line-height: 2;
+    margin-top: 25px;
+}
+
+.comparison-summary h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
 footer {
     text-align: center;
     padding: 25px;
@@ -353,10 +475,17 @@ footer {
     color: white;
 }
 
+/* RESPONSIVE DESIGN */
+
 @media (max-width: 750px) {
     .form-grid,
-    .cards {
+    .cards,
+    .comparison-cards {
         grid-template-columns: 1fr 1fr;
+    }
+
+    .compare-select-grid {
+        grid-template-columns: 1fr;
     }
 
     .container {
@@ -374,8 +503,14 @@ footer {
 
 @media (max-width: 450px) {
     .form-grid,
-    .cards {
+    .cards,
+    .comparison-cards,
+    .comparison-labels {
         grid-template-columns: 1fr;
+    }
+
+    .container {
+        width: 94%;
     }
 
     nav {
@@ -393,5 +528,11 @@ footer {
     .history-heading {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .form-section,
+    .results,
+    .history-section {
+        padding: 20px;
     }
 }

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Audit Comparison | GreenAudit</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<nav>
+    <h2>🌱 GreenAudit</h2>
+
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}">New Audit</a>
+        <a href="{{ url_for('history') }}">Audit History</a>
+        <a href="{{ url_for('compare') }}" class="active">Compare Audits</a>
+    </div>
+
+    <span>Green IT Audit System</span>
+</nav>
+
+<div class="container">
+
+    <header>
+        <h1>Audit Comparison</h1>
+        <p>
+            Compare two audits to measure changes in energy consumption,
+            carbon emissions and Green IT performance.
+        </p>
+    </header>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <section class="form-section">
+
+        <h2>Select Audits to Compare</h2>
+
+        {% if audits|length >= 2 %}
+
+        <form action="{{ url_for('compare') }}" method="POST">
+
+            <div class="compare-select-grid">
+
+                <div>
+                    <label for="baseline_id">Baseline Audit (Earlier)</label>
+
+                    <select name="baseline_id" id="baseline_id" required>
+                        <option value="">Select baseline audit</option>
+
+                        {% for audit in audits %}
+                        <option value="{{ audit.id }}"
+                            {% if comparison and comparison.baseline.id == audit.id %}selected{% endif %}>
+                            Audit #{{ audit.id }} —
+                            {{ audit.audit_date.strftime('%d %b %Y, %I:%M %p') if audit.audit_date else 'N/A' }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="current_id">Comparison Audit (Later)</label>
+
+                    <select name="current_id" id="current_id" required>
+                        <option value="">Select comparison audit</option>
+
+                        {% for audit in audits %}
+                        <option value="{{ audit.id }}"
+                            {% if comparison and comparison.current.id == audit.id %}selected{% endif %}>
+                            Audit #{{ audit.id }} —
+                            {{ audit.audit_date.strftime('%d %b %Y, %I:%M %p') if audit.audit_date else 'N/A' }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+            </div>
+
+            <button type="submit">
+                Generate Comparison →
+            </button>
+
+        </form>
+
+        {% else %}
+
+        <p>
+            You need at least two saved audits to generate a comparison.
+        </p>
+
+        <a href="{{ url_for('home') }}" class="history-button">
+            Generate New Audit
+        </a>
+
+        {% endif %}
+
+    </section>
+
+    {% if comparison %}
+
+    <section class="results">
+
+        <h2>Comparison Results</h2>
+
+        <div class="comparison-labels">
+            <div>
+                <strong>Baseline</strong>
+                <p>
+                    Audit #{{ comparison.baseline.id }}
+                    {% if comparison.baseline.audit_date %}
+                    · {{ comparison.baseline.audit_date.strftime('%d %b %Y') }}
+                    {% endif %}
+                </p>
+            </div>
+
+            <div>
+                <strong>Compared With</strong>
+                <p>
+                    Audit #{{ comparison.current.id }}
+                    {% if comparison.current.audit_date %}
+                    · {{ comparison.current.audit_date.strftime('%d %b %Y') }}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="comparison-cards">
+
+            <div class="comparison-card">
+                <h3>Energy Consumption</h3>
+
+                <p class="comparison-values">
+                    {{ "%.2f"|format(comparison.baseline.total_energy or 0) }}
+                    <span>→</span>
+                    {{ "%.2f"|format(comparison.current.total_energy or 0) }}
+                </p>
+
+                <small>kWh</small>
+
+                {% if comparison.energy_reduction is not none %}
+                    <p class="change-value {% if comparison.energy_reduction > 0 %}positive{% elif comparison.energy_reduction < 0 %}negative{% else %}neutral{% endif %}">
+                        {% if comparison.energy_reduction > 0 %}
+                            ↓ {{ comparison.energy_reduction }}% reduction
+                        {% elif comparison.energy_reduction < 0 %}
+                            ↑ {{ comparison.energy_reduction|abs }}% increase
+                        {% else %}
+                            No change
+                        {% endif %}
+                    </p>
+                {% else %}
+                    <p class="change-value neutral">Baseline was zero</p>
+                {% endif %}
+            </div>
+
+            <div class="comparison-card">
+                <h3>Carbon Emissions</h3>
+
+                <p class="comparison-values">
+                    {{ "%.2f"|format(comparison.baseline.carbon_emissions or 0) }}
+                    <span>→</span>
+                    {{ "%.2f"|format(comparison.current.carbon_emissions or 0) }}
+                </p>
+
+                <small>kg CO₂</small>
+
+                {% if comparison.carbon_reduction is not none %}
+                    <p class="change-value {% if comparison.carbon_reduction > 0 %}positive{% elif comparison.carbon_reduction < 0 %}negative{% else %}neutral{% endif %}">
+                        {% if comparison.carbon_reduction > 0 %}
+                            ↓ {{ comparison.carbon_reduction }}% reduction
+                        {% elif comparison.carbon_reduction < 0 %}
+                            ↑ {{ comparison.carbon_reduction|abs }}% increase
+                        {% else %}
+                            No change
+                        {% endif %}
+                    </p>
+                {% else %}
+                    <p class="change-value neutral">Baseline was zero</p>
+                {% endif %}
+            </div>
+
+            <div class="comparison-card">
+                <h3>Green IT Score</h3>
+
+                <p class="comparison-values">
+                    {{ comparison.baseline.green_score }}
+                    <span>→</span>
+                    {{ comparison.current.green_score }}
+                </p>
+
+                <small>out of 100</small>
+
+                <p class="change-value {% if comparison.score_change > 0 %}positive{% elif comparison.score_change < 0 %}negative{% else %}neutral{% endif %}">
+                    {% if comparison.score_change > 0 %}
+                        ↑ {{ comparison.score_change }} points improved
+                    {% elif comparison.score_change < 0 %}
+                        ↓ {{ comparison.score_change|abs }} points decreased
+                    {% else %}
+                        No change
+                    {% endif %}
+                </p>
+            </div>
+
+        </div>
+
+        <h3>Visual Comparison</h3>
+
+        <div class="chart-container">
+            <canvas id="comparisonChart"></canvas>
+        </div>
+
+        <div class="comparison-summary">
+
+            <h3>Comparison Summary</h3>
+
+            {% if comparison.energy_change < 0 %}
+                <p>🌱 Energy consumption decreased by {{ comparison.energy_change|abs }} kWh.</p>
+            {% elif comparison.energy_change > 0 %}
+                <p>⚠️ Energy consumption increased by {{ comparison.energy_change }} kWh.</p>
+            {% else %}
+                <p>Energy consumption remained unchanged.</p>
+            {% endif %}
+
+            {% if comparison.carbon_change < 0 %}
+                <p>🌱 Carbon emissions decreased by {{ comparison.carbon_change|abs }} kg CO₂.</p>
+            {% elif comparison.carbon_change > 0 %}
+                <p>⚠️ Carbon emissions increased by {{ comparison.carbon_change }} kg CO₂.</p>
+            {% else %}
+                <p>Carbon emissions remained unchanged.</p>
+            {% endif %}
+
+            {% if comparison.score_change > 0 %}
+                <p>🌱 Green IT score improved by {{ comparison.score_change }} points.</p>
+            {% elif comparison.score_change < 0 %}
+                <p>⚠️ Green IT score decreased by {{ comparison.score_change|abs }} points.</p>
+            {% else %}
+                <p>Green IT score remained unchanged.</p>
+            {% endif %}
+
+        </div>
+
+    </section>
+
+    <script>
+        const comparisonCanvas = document.getElementById('comparisonChart');
+
+        new Chart(comparisonCanvas, {
+            type: 'bar',
+
+            data: {
+                labels: [
+                    'Energy (kWh)',
+                    'Carbon (kg CO₂)',
+                    'Green IT Score'
+                ],
+
+                datasets: [
+                    {
+                        label: 'Baseline Audit',
+                        data: [
+                            {{ comparison.baseline.total_energy or 0 }},
+                            {{ comparison.baseline.carbon_emissions or 0 }},
+                            {{ comparison.baseline.green_score or 0 }}
+                        ],
+                        backgroundColor: '#81c784',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Comparison Audit',
+                        data: [
+                            {{ comparison.current.total_energy or 0 }},
+                            {{ comparison.current.carbon_emissions or 0 }},
+                            {{ comparison.current.green_score or 0 }}
+                        ],
+                        backgroundColor: '#237849',
+                        borderRadius: 6
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+    {% endif %}
+
+</div>
+
+<footer>
+    GreenAudit | Sustainable IT for a Greener Future 🌍
+</footer>
+
+</body>
+</html>

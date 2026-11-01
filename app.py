@@ -1,8 +1,7 @@
-
 import os
 import mysql.connector
 from dotenv import load_dotenv
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 
 load_dotenv()
 
@@ -136,7 +135,6 @@ def home():
 
             carbon = total_energy * emission_factor
 
-            # Green IT scoring components
             if hours <= 6:
                 energy_score = 100
             elif hours <= 8:
@@ -234,7 +232,6 @@ def home():
                 "recommendations": recommendations
             }
 
-            # Save audit to MySQL
             connection = get_db_connection()
             cursor = connection.cursor()
 
@@ -329,6 +326,112 @@ def history():
     return render_template(
         "history.html",
         audits=audits,
+        error=error
+    )
+
+
+@app.route("/compare", methods=["GET", "POST"])
+def compare():
+    audits = []
+    comparison = None
+    error = None
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT
+                id,
+                audit_date,
+                total_energy,
+                carbon_emissions,
+                green_score,
+                rating
+            FROM audits
+            ORDER BY audit_date ASC, id ASC
+        """)
+
+        audits = cursor.fetchall()
+
+        if request.method == "POST":
+            baseline_id = request.form.get("baseline_id", type=int)
+            current_id = request.form.get("current_id", type=int)
+
+            if not baseline_id or not current_id:
+                error = "Please select both audits."
+
+            elif baseline_id == current_id:
+                error = "Please select two different audits."
+
+            else:
+                cursor.execute("""
+                    SELECT
+                        id,
+                        audit_date,
+                        total_energy,
+                        carbon_emissions,
+                        green_score,
+                        rating
+                    FROM audits
+                    WHERE id IN (%s, %s)
+                """, (baseline_id, current_id))
+
+                selected = {
+                    audit["id"]: audit
+                    for audit in cursor.fetchall()
+                }
+
+                if baseline_id not in selected or current_id not in selected:
+                    error = "One or both selected audits could not be found."
+
+                else:
+                    baseline = selected[baseline_id]
+                    current = selected[current_id]
+
+                    old_energy = float(baseline["total_energy"] or 0)
+                    new_energy = float(current["total_energy"] or 0)
+
+                    old_carbon = float(baseline["carbon_emissions"] or 0)
+                    new_carbon = float(current["carbon_emissions"] or 0)
+
+                    old_score = int(baseline["green_score"] or 0)
+                    new_score = int(current["green_score"] or 0)
+
+                    def reduction(old_value, new_value):
+                        if old_value == 0:
+                            return None
+                        return round(
+                            ((old_value - new_value) / old_value) * 100, 2
+                        )
+
+                    comparison = {
+                        "baseline": baseline,
+                        "current": current,
+                        "energy_change": round(new_energy - old_energy, 2),
+                        "carbon_change": round(new_carbon - old_carbon, 2),
+                        "score_change": new_score - old_score,
+                        "energy_reduction": reduction(old_energy, new_energy),
+                        "carbon_reduction": reduction(old_carbon, new_carbon)
+                    }
+
+    except mysql.connector.Error as e:
+        error = f"Could not load comparison data: {e}"
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+        if connection is not None and connection.is_connected():
+            connection.close()
+
+    return render_template(
+        "comparison.html",
+        audits=audits,
+        comparison=comparison,
         error=error
     )
 

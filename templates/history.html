@@ -1,11 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Audit History | GreenAudit</title>
 
     <link rel="stylesheet"
@@ -20,6 +18,7 @@
     <div class="nav-links">
         <a href="{{ url_for('home') }}">New Audit</a>
         <a href="{{ url_for('history') }}" class="active">Audit History</a>
+        <a href="{{ url_for('compare') }}">Compare Audits</a>
     </div>
 
     <span>Green IT Audit System</span>
@@ -55,7 +54,6 @@
         {% if audits %}
 
         <div class="table-container">
-
             <table>
                 <thead>
                     <tr>
@@ -97,6 +95,58 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+
+        <div class="compare-selection">
+
+            <h2>Compare Two Audits</h2>
+
+            <p>
+                Select an earlier audit and a later audit to see
+                how your organization's sustainability performance changed.
+            </p>
+
+            <form action="{{ url_for('compare') }}" method="POST">
+
+                <div class="compare-select-grid">
+
+                    <div>
+                        <label for="baseline_id">Baseline Audit (Earlier)</label>
+
+                        <select name="baseline_id" id="baseline_id" required>
+                            <option value="">Select earlier audit</option>
+
+                            {% for audit in audits %}
+                            <option value="{{ audit.id }}">
+                                Audit #{{ audit.id }} —
+                                {{ audit.audit_date.strftime('%d %b %Y') if audit.audit_date else 'N/A' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="current_id">Comparison Audit (Later)</label>
+
+                        <select name="current_id" id="current_id" required>
+                            <option value="">Select later audit</option>
+
+                            {% for audit in audits %}
+                            <option value="{{ audit.id }}">
+                                Audit #{{ audit.id }} —
+                                {{ audit.audit_date.strftime('%d %b %Y') if audit.audit_date else 'N/A' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+
+                <button type="submit">
+                    Compare Audits →
+                </button>
+
+            </form>
 
         </div>
 

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -22,6 +21,7 @@
     <div class="nav-links">
         <a href="{{ url_for('home') }}" class="active">New Audit</a>
         <a href="{{ url_for('history') }}">Audit History</a>
+        <a href="{{ url_for('compare') }}">Compare Audits</a>
     </div>
 
     <span>Green IT Audit System</span>
@@ -242,10 +242,8 @@
 
         new Chart(ctx, {
             type: 'bar',
-
             data: {
                 labels: ['Desktops', 'Laptops', 'Servers'],
-
                 datasets: [{
                     label: 'Energy Consumption (kWh)',
                     data: [
@@ -261,7 +259,6 @@
                     borderRadius: 6
                 }]
             },
-
             options: {
                 responsive: true,
                 plugins: {
