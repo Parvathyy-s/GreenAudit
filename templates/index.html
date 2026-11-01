@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -231,9 +232,23 @@
 
         </div>
 
-        <a href="{{ url_for('history') }}" class="history-button">
-            View All Previous Audits →
-        </a>
+        <!-- Audit Action Buttons -->
+
+        <div class="audit-actions">
+
+            <a href="{{ url_for('history') }}"
+               class="history-button">
+                View All Previous Audits →
+            </a>
+
+            {% if results.audit_id %}
+            <a href="{{ url_for('download_report', audit_id=results.audit_id) }}"
+               class="history-button download-button">
+                📄 Download PDF Report
+            </a>
+            {% endif %}
+
+        </div>
 
     </section>
 

@@ -536,3 +536,25 @@ footer {
         padding: 20px;
     }
 }
+.audit-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.audit-actions a {
+    margin: 0;
+}
+
+@media (max-width: 600px) {
+    .audit-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .audit-actions a {
+        text-align: center;
+    }
+}
