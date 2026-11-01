@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Audit History | GreenAudit</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<nav>
+    <h2>🌱 GreenAudit</h2>
+
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}">New Audit</a>
+        <a href="{{ url_for('history') }}" class="active">Audit History</a>
+    </div>
+
+    <span>Green IT Audit System</span>
+</nav>
+
+<div class="container">
+
+    <header>
+        <h1>Audit History</h1>
+        <p>
+            View previously generated sustainability audits
+            stored in your database.
+        </p>
+    </header>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <section class="history-section">
+
+        <div class="history-heading">
+            <div>
+                <h2>Previous Audits</h2>
+                <p>{{ audits|length }} audit record(s) found</p>
+            </div>
+
+            <a href="{{ url_for('home') }}" class="history-button">
+                + New Audit
+            </a>
+        </div>
+
+        {% if audits %}
+
+        <div class="table-container">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Devices</th>
+                        <th>Energy (kWh)</th>
+                        <th>Carbon (kg)</th>
+                        <th>Score</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for audit in audits %}
+                    <tr>
+                        <td>{{ audit.id }}</td>
+
+                        <td>
+                            {{ audit.audit_date.strftime('%d %b %Y, %I:%M %p') if audit.audit_date else 'N/A' }}
+                        </td>
+
+                        <td>{{ audit.total_devices }}</td>
+
+                        <td>{{ "%.2f"|format(audit.total_energy or 0) }}</td>
+
+                        <td>{{ "%.2f"|format(audit.carbon_emissions or 0) }}</td>
+
+                        <td>
+                            <strong>{{ audit.green_score }}/100</strong>
+                        </td>
+
+                        <td>
+                            <span class="rating-label">
+                                {{ audit.rating }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-history">
+            <h3>📋 No audits found</h3>
+            <p>Your submitted audits will appear here.</p>
+
+            <a href="{{ url_for('home') }}" class="history-button">
+                Generate Your First Audit
+            </a>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+<footer>
+    GreenAudit | Sustainable IT for a Greener Future 🌍
+</footer>
+
+</body>
+</html>

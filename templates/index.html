@@ -18,6 +18,12 @@
 
 <nav>
     <h2>🌱 GreenAudit</h2>
+
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}" class="active">New Audit</a>
+        <a href="{{ url_for('history') }}">Audit History</a>
+    </div>
+
     <span>Green IT Audit System</span>
 </nav>
 
@@ -224,6 +230,10 @@
             {% endfor %}
 
         </div>
+
+        <a href="{{ url_for('history') }}" class="history-button">
+            View All Previous Audits →
+        </a>
 
     </section>
 
