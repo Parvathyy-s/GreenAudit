@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>GreenAudit | IT Sustainability</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<nav>
+    <h2>🌱 GreenAudit</h2>
+    <span>Green IT Audit System</span>
+</nav>
+
+<div class="container">
+
+    <header>
+        <h1>Organization IT Audit</h1>
+        <p>
+            Evaluate your organization's energy consumption,
+            carbon footprint and Green IT performance.
+        </p>
+    </header>
+
+    <section class="form-section">
+
+        <h2>Enter IT Resource Details</h2>
+
+        <form method="POST">
+
+            <h3>1. IT Devices</h3>
+
+            <div class="form-grid">
+
+                <div>
+                    <label>Number of Desktops</label>
+                    <input type="number" name="desktops"
+                           min="0" step="1"
+                           value="{{ form_data.desktops }}" required>
+                </div>
+
+                <div>
+                    <label>Number of Laptops</label>
+                    <input type="number" name="laptops"
+                           min="0" step="1"
+                           value="{{ form_data.laptops }}" required>
+                </div>
+
+                <div>
+                    <label>Number of Servers</label>
+                    <input type="number" name="servers"
+                           min="0" step="1"
+                           value="{{ form_data.servers }}" required>
+                </div>
+
+            </div>
+
+            <h3>2. Usage Details</h3>
+
+            <div class="form-grid">
+
+                <div>
+                    <label>Operating Hours Per Day</label>
+                    <input type="number" name="hours"
+                           min="0.1" max="24" step="any"
+                           value="{{ form_data.hours }}" required>
+                </div>
+
+                <div>
+                    <label>Working Days Per Month</label>
+                    <input type="number" name="days"
+                           min="1" max="31" step="1"
+                           value="{{ form_data.days }}" required>
+                </div>
+
+                <div>
+                    <label>Idle Hours Per Day</label>
+                    <input type="number" name="idle"
+                           min="0" max="24" step="any"
+                           value="{{ form_data.idle }}" required>
+                </div>
+
+            </div>
+
+            <h3>3. Sustainability Details</h3>
+
+            <div class="form-grid">
+
+                <div>
+                    <label>Renewable Energy (%)</label>
+                    <input type="number" name="renewable"
+                           min="0" max="100" step="any"
+                           value="{{ form_data.renewable }}" required>
+                </div>
+
+                <div>
+                    <label>IT Device Recycling (%)</label>
+                    <input type="number" name="recycling"
+                           min="0" max="100" step="any"
+                           value="{{ form_data.recycling }}" required>
+                </div>
+
+                <div>
+                    <label>Emission Factor (kg CO₂/kWh)</label>
+                    <input type="number" name="emission_factor"
+                           min="0" step="any"
+                           value="{{ form_data.emission_factor }}" required>
+                </div>
+
+            </div>
+
+            <button type="submit">
+                Generate Green IT Audit →
+            </button>
+
+        </form>
+
+    </section>
+
+    {% if error %}
+    <div class="error">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if results %}
+
+    <section class="results">
+
+        <h2>GreenAudit Results</h2>
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>Total Devices</h3>
+                <p>{{ results.devices }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Energy Consumption</h3>
+                <p>{{ results.energy }} kWh</p>
+            </div>
+
+            <div class="card">
+                <h3>Carbon Emissions</h3>
+                <p>{{ results.carbon }} kg CO₂</p>
+            </div>
+
+        </div>
+
+        <div class="score-section">
+
+            <h3>Green IT Performance Score</h3>
+
+            <div class="score-circle"
+                 style="--score: {{ results.score }}%;">
+
+                <div class="score-inner">
+                    <h2>{{ results.score }}</h2>
+                    <span>out of 100</span>
+                </div>
+
+            </div>
+
+            <p class="score-rating">
+                {{ results.rating }}
+            </p>
+
+        </div>
+
+        <div class="score-breakdown">
+
+            <h3>Score Breakdown</h3>
+
+            <p>
+                Operating Efficiency:
+                {{ results.energy_score }}/100 (35%)
+            </p>
+
+            <p>
+                Idle Time Management:
+                {{ results.idle_score }}/100 (20%)
+            </p>
+
+            <p>
+                Renewable Energy:
+                {{ results.renewable_score }}/100 (25%)
+            </p>
+
+            <p>
+                IT Recycling:
+                {{ results.recycling_score }}/100 (20%)
+            </p>
+
+        </div>
+
+        <h3>Device-wise Energy Consumption</h3>
+
+        <div class="energy-details">
+            <p>Desktops: {{ results.desktop_energy }} kWh</p>
+            <p>Laptops: {{ results.laptop_energy }} kWh</p>
+            <p>Servers: {{ results.server_energy }} kWh</p>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="energyChart"></canvas>
+        </div>
+
+        <h3>Green Recommendations</h3>
+
+        <div class="recommendations">
+
+            {% for recommendation in results.recommendations %}
+                <p>🌱 {{ recommendation }}</p>
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    <script>
+        const ctx = document.getElementById('energyChart');
+
+        new Chart(ctx, {
+            type: 'bar',
+
+            data: {
+                labels: ['Desktops', 'Laptops', 'Servers'],
+
+                datasets: [{
+                    label: 'Energy Consumption (kWh)',
+                    data: [
+                        {{ results.desktop_energy }},
+                        {{ results.laptop_energy }},
+                        {{ results.server_energy }}
+                    ],
+                    backgroundColor: [
+                        '#4caf50',
+                        '#81c784',
+                        '#237849'
+                    ],
+                    borderRadius: 6
+                }]
+            },
+
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+    {% endif %}
+
+</div>
+
+<footer>
+    GreenAudit | Sustainable IT for a Greener Future 🌍
+</footer>
+
+</body>
+</html>
